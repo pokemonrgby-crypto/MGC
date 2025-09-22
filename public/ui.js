@@ -36,3 +36,41 @@ export const LoginView = () => {
         </div>
     `;
 };
+
+/** 로그인 후 보여질 메인 앱 레이아웃을 렌더링합니다. */
+export const renderMainLayout = () => {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <main id="content-area" class="content-area">
+            </main>
+        <nav class="bottom-nav">
+            <a href="/main" class="nav-item" data-link>
+                <span>🏠</span>
+                <span class="label">메인</span>
+            </a>
+            <a href="/create" class="nav-item" data-link>
+                <span>✨</span>
+                <span class="label">생성</span>
+            </a>
+            <a href="/my-info" class="nav-item" data-link>
+                <span>👤</span>
+                <span class="label">내 정보</span>
+            </a>
+        </nav>
+    `;
+}
+
+/** 메인 뷰 */
+export const MainView = () => {
+    document.getElementById('content-area').innerHTML = '<h2>메인 화면</h2>';
+}
+
+/** 생성 뷰 */
+export const CreateView = () => {
+    document.getElementById('content-area').innerHTML = '<h2>생성 화면</h2>';
+}
+
+/** 내 정보 뷰 */
+export const MyInfoView = () => {
+    document.getElementById('content-area').innerHTML = '<h2>내 정보 화면</h2>';
+}
