@@ -17,7 +17,7 @@ export const WorldDetailView = (world) => {
 
             <div class="world-content-section">
                 <h3>주요 장소</h3>
-                ${(world.landmarks && JSON.parse(world.landmarks).length > 0) ? JSON.parse(world.landmarks).map(l => `
+                ${(world.landmarks && world.landmarks.length > 0) ? world.landmarks.map(l => `
                     <div class="detail-card">
                         <h4>${l.name}</h4>
                         <p>${l.description}</p>
@@ -27,7 +27,7 @@ export const WorldDetailView = (world) => {
             
             <div class="world-content-section">
                 <h3>주요 조직</h3>
-                ${(world.organizations && JSON.parse(world.organizations).length > 0) ? JSON.parse(world.organizations).map(o => `
+                ${(world.organizations && world.organizations.length > 0) ? world.organizations.map(o => `
                     <div class="detail-card">
                         <h4>${o.name}</h4>
                         <p>${o.description}</p>
@@ -37,7 +37,7 @@ export const WorldDetailView = (world) => {
 
             <div class="world-content-section">
                 <h3>주요 인물</h3>
-                ${(world.npcs && JSON.parse(world.npcs).length > 0) ? JSON.parse(world.npcs).map(n => `
+                ${(world.npcs && world.npcs.length > 0) ? world.npcs.map(n => `
                     <div class="detail-card">
                         <h4>${n.name} (${n.role})</h4>
                         <p>${n.description}</p>
