@@ -10,8 +10,15 @@ export async function registerUser(nickname, password) {
     return response.json();
 }
 
-// 2. 로그인 요청 (나중에 구현)
-// export async function loginUser(nickname, password) { ... }
+// 2. 로그인 요청
+export async function loginUser(nickname, password) {
+    const response = await fetch('/.netlify/functions/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, password }),
+    });
+    return response.json();
+}
 
 // 3. 세계관 생성 요청 (나중에 구현)
 // export async function generateWorld() { ... }
