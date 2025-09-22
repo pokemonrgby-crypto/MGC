@@ -57,6 +57,8 @@ document.addEventListener('click', (event) => {
     }
 });
 
+
+// 클릭 이벤트 리스너
 document.addEventListener('click', async (event) => {
     if (event.target.id === 'logout-button') {
         handleLogout();
@@ -65,7 +67,7 @@ document.addEventListener('click', async (event) => {
         handleSaveApiKey();
     }
 
-    // --- 세계관 생성 버튼 로직 (완전 변경) ---
+    // --- 세계관 생성 버튼 로직 (프롬프트 파일 로드 기능 추가) ---
     if (event.target.id === 'generate-world-button') {
         const userApiKey = getApiKey();
         if (!userApiKey) {
@@ -88,31 +90,36 @@ document.addEventListener('click', async (event) => {
         button.disabled = true;
 
         try {
-            // 1. (클라이언트) Google AI 호출
+            // 1. (파일 로드) 외부 프롬프트 파일을 불러옴
+            const response = await fetch('/prompts/world-prompt.txt');
+            if (!response.ok) {
+                throw new Error('프롬프트 파일을 불러오는 데 실패했습니다.');
+            }
+            const promptTemplate = await response.text();
+
+            // 2. (클라이언트) 불러온 프롬프트에 키워드를 삽입하여 AI 호출
             const genAI = new GoogleGenerativeAI(userApiKey);
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const prompt = `당신은 TRPG 마스터입니다. 다음 키워드를 기반으로 매력적인 판타지 세계관을 JSON 형식으로 생성해주세요. 키워드: ${keyword}. JSON 형식: {"name": "세계관 이름", "description": "세계관 설명", "landmarks": [{"name": "명소1", "description": "설명"}], "organizations": [{"name": "조직1", "description": "설명"}], "npcs": [{"name": "NPC1", "description": "설명"}]}`;
+            const finalPrompt = promptTemplate.replace('{INPUT_KEYWORD}', keyword);
 
-            const result = await model.generateContent(prompt);
+            const result = await model.generateContent(finalPrompt);
             const responseText = result.response.text();
             const worldData = JSON.parse(responseText.replace(/```json|```/g, '').trim());
 
-            // 2. (서버) 생성된 데이터를 서버에 저장 요청
+            // 3. (서버) 생성된 데이터를 서버에 저장 요청
             statusDiv.innerHTML = '<div class="spinner"></div><p>생성된 세계를 데이터베이스에 기록 중입니다...</p>';
             const saveResult = await saveWorld(worldData);
 
             if (saveResult.world) {
                 statusDiv.style.display = 'none';
-                renderWorldCard(saveResult.world);
+                renderWorldCard(saveResult.world); // 성공 시 카드 렌더링
             } else {
-                // 쿨타임 에러 등 서버에서 보낸 메시지 표시
                 statusDiv.textContent = saveResult.message;
                 statusDiv.className = 'message-area error';
             }
         } catch (error) {
             console.error(error);
-            // API 키가 잘못되었거나, AI 응답 파싱 실패 등
-            statusDiv.textContent = '세계관 창조에 실패했습니다. API 키가 유효한지 확인해주세요.';
+            statusDiv.textContent = '세계관 창조에 실패했습니다. API 키 또는 프롬프트를 확인해주세요.';
             statusDiv.className = 'message-area error';
         } finally {
             button.disabled = false;
