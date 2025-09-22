@@ -1,6 +1,8 @@
-import { registerUser } from './api.js';
+import { registerUser, loginUser } from './api.js';
 import { navigateTo } from './router.js';
+import { saveToken, removeToken } from './session.js';
 
+/** 회원가입 폼 제출 이벤트를 처리합니다. */
 export async function handleRegisterSubmit(event) {
     event.preventDefault();
 
@@ -8,7 +10,7 @@ export async function handleRegisterSubmit(event) {
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
     const messageDiv = document.getElementById('message');
-    messageDiv.style.display = 'block'; // 메시지 창 보이기
+    messageDiv.style.display = 'block';
 
     if (password !== passwordConfirm) {
         messageDiv.textContent = '비밀번호가 일치하지 않습니다.';
@@ -30,7 +32,7 @@ export async function handleRegisterSubmit(event) {
         if (result.message.includes('성공')) {
             messageDiv.textContent = result.message;
             messageDiv.className = 'message-area success';
-            setTimeout(() => navigateTo('/login'), 2000); // 2초 후 로그인 페이지로 이동
+            setTimeout(() => navigateTo('/login'), 2000);
         } else {
             messageDiv.textContent = '오류: ' + result.message;
             messageDiv.className = 'message-area error';
@@ -40,15 +42,6 @@ export async function handleRegisterSubmit(event) {
         messageDiv.className = 'message-area error';
     }
 }
-
-// import { loginUser } from './api.js'; // 나중에 실제 로그인 API와 연동
-
-/** 로그인 폼 제출 이벤트를 처리합니다. */
-import { registerUser, loginUser } from './api.js'; // loginUser import 추가
-import { navigateTo } from './router.js';
-import { saveToken, removeToken } from './session.js'; // session.js에서 함수 import
-
-// ... handleRegisterSubmit 함수는 기존과 동일 ...
 
 /** 로그인 폼 제출 이벤트를 처리합니다. */
 export async function handleLoginSubmit(event) {
