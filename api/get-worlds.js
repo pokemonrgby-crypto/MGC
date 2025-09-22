@@ -7,8 +7,18 @@ export default async function handler(req, res) {
 
     try {
         const pool = getDbPool();
-        // 생성된 최신순으로 정렬해서 모든 세계관을 가져옵니다.
-        const result = await pool.query('SELECT * FROM worlds ORDER BY created_at DESC');
+        // worlds 테이블과 users 테이블을 조인하여 작성자 닉네임을 함께 가져옵니다.
+        const result = await pool.query(`
+            SELECT 
+                w.*, 
+                u.nickname as creator_nickname 
+            FROM 
+                worlds w 
+            LEFT JOIN 
+                users u ON w.created_by_user_id = u.id 
+            ORDER BY 
+                w.created_at DESC
+        `);
         
         return res.status(200).json({ worlds: result.rows });
 
