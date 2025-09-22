@@ -1,27 +1,39 @@
 import { getToken } from './session.js';
 
 // 1. 회원가입 요청
-export async function registerUser(nickname, password) { /* ... 기존과 동일 ... */ }
-
-// 2. 로그인 요청
-export async function loginUser(nickname, password) { /* ... 기존과 동일 ... */ }
-
-// 3. (신규) 이미지 생성 요청
-export async function generateImage(prompt, userApiKey) {
-    const response = await fetch('/api/generate-image', { // Vercel 경로(/api/)로 수정
+export async function registerUser(nickname, password) {
+    const response = await fetch('/api/register', { // 경로 수정
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt, userApiKey }), // 사용자의 키를 함께 전송
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, password }),
     });
     return response.json();
 }
 
-// 4. 생성된 세계관 저장 요청 (Vercel 경로로 수정)
+// 2. 로그인 요청
+export async function loginUser(nickname, password) {
+    const response = await fetch('/api/login', { // 경로 수정
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname, password }),
+    });
+    return response.json();
+}
+
+// 3. 이미지 생성 요청
+export async function generateImage(prompt, userApiKey) {
+    const response = await fetch('/api/generate-image', { // 경로 수정
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, userApiKey }),
+    });
+    return response.json();
+}
+
+// 4. 세계관 저장 요청
 export async function saveWorld(worldData, imageUrl) {
     const token = getToken();
-    const response = await fetch('/api/save-world', { // Vercel 경로(/api/)로 수정
+    const response = await fetch('/api/save-world', { // 경로 수정
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
