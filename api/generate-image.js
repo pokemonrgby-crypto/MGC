@@ -28,6 +28,14 @@ export default async function handler(req, res) {
     const form = new FormData();
     form.append('key', IMGBB_API_KEY);
     form.append('image', imgBase64);
+
+    // [수정] form-data가 생성한 헤더를 포함하여 요청합니다.
+    const uploadRes = await fetch('https://api.imgbb.com/1/upload', { 
+        method: 'POST', 
+        headers: form.getHeaders(), // 이 줄을 추가하세요.
+        body: form 
+    });
+    
     const uploadRes = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: form });
     const uploadJson = await uploadRes.json();
     if (!uploadRes.ok) throw new Error(uploadJson?.error?.message || 'imgbb 업로드 실패');
