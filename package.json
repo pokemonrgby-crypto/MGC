@@ -1,8 +1,8 @@
 {
   "name": "mgc-project",
   "version": "1.0.0",
-  "description": "AI Text Battle Game",
-  "main": "main.js",
+  "type": "module",
+  "description": "MGCUT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
