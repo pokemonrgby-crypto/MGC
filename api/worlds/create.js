@@ -38,15 +38,25 @@ export default async function handler(req, res) {
     const genAI = new GoogleGenerativeAI(userApiKey);
     const { primary, fallback } = pickModels();
     async function run(modelName) {
-      const model = genAI.getGenerativeModel({ model: modelName });
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          responseMimeType: "application/json", // JSON 응답 강제
+        },
+      });
       const res1 = await model.generateContent(prompt + '\n\n[응답은 JSON만]');
       return res1.response.text();
     }
+    
     let text;
     try { text = await run(primary); } catch (_) { text = await run(fallback); }
 
     let world;
-    try { world = JSON.parse(text); }
+    try {
+      // 코드 블록(```json ... ```)을 제거하는 로직 추가
+      const cleanedText = text.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
+      world = JSON.parse(cleanedText); 
+    }
     catch (e) {
       return res.status(500).json({ message: '모델 응답이 유효 JSON이 아니야.', raw: (text || '').slice(0, 400) });
     }
