@@ -170,3 +170,33 @@ input[type="password"]:focus {
 .nav-item.active svg {
     stroke-width: 2.5; /* 활성화 시 선을 살짝 굵게 */
 }
+
+/* --- 내 정보 페이지 스타일 --- */
+.my-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.api-key-section {
+    background-color: var(--input-bg-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.api-key-section h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.api-key-section p {
+    font-size: 0.85rem;
+    color: var(--text-secondary-color);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logout-btn {
+    background: #555; /* 로그아웃 버튼은 다른 색으로 */
+}
