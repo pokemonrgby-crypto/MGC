@@ -5,7 +5,8 @@ import { MainLayout } from './views/MainLayout.js';
 import { MainView } from './views/MainView.js';
 import { CreateView } from './views/CreateView.js';
 import { MyInfoView } from './views/MyInfoView.js';
-// [수정] 누락되었던 api.js의 getWorlds와 views의 WorldDetailView를 import 합니다.
+// [수정] auth.js 파일에서 이벤트 처리 함수들을 가져옵니다.
+import { handleRegisterSubmit, handleLoginSubmit } from './auth.js';
 import { getWorld, getWorlds } from './api.js';
 import { WorldDetailView } from './views/WorldDetailView.js';
 
