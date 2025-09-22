@@ -12,8 +12,14 @@ import { WorldDetailView } from './views/WorldDetailView.js';
 const app = document.getElementById('app');
 
 // 이제 각 함수는 해당하는 View의 HTML을 app에 그려주는 역할만 함
-export const renderRegister = () => { app.innerHTML = RegisterView(); };
-export const renderLogin = () => { app.innerHTML = LoginView(); };
+export const renderRegister = () => { 
+    app.innerHTML = RegisterView(); 
+    document.getElementById('register-form').addEventListener('submit', handleRegisterSubmit);
+};
+export const renderLogin = () => { 
+    app.innerHTML = LoginView();
+    document.getElementById('login-form').addEventListener('submit', handleLoginSubmit);
+};
 
 // 메인 레이아웃을 그리고, 그 안의 content-area에 특정 뷰를 그림
 export const renderAppLayout = () => { app.innerHTML = MainLayout(); };
