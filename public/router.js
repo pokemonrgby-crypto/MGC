@@ -1,33 +1,62 @@
-import { RegisterView, LoginView } from './ui.js';
+import { RegisterView, LoginView, renderMainLayout, MainView, CreateView, MyInfoView } from './ui.js';
 
-// 경로(URL)에 따라 어떤 화면을 보여줄지 정의하는 지도
+// 경로 지도 확장
 const routes = {
-    '/': RegisterView,
-    '/login': LoginView,
+    // Auth routes
+    '/': { view: RegisterView, layout: 'auth' },
+    '/login': { view: LoginView, layout: 'auth' },
+    // App routes
+    '/main': { view: MainView, layout: 'app' },
+    '/create': { view: CreateView, layout: 'app' },
+    '/my-info': { view: MyInfoView, layout: 'app' },
 };
 
-/** 요청된 경로로 페이지를 이동시키는 함수 */
+// 현재 레이아웃 상태를 추적
+let currentLayout = null;
+
 export const navigateTo = (url) => {
     history.pushState(null, null, url);
     router();
 };
 
-/** 현재 URL을 확인하고 올바른 화면을 그려주는 함수 */
 const router = async () => {
     const path = location.pathname;
-    // 경로에 맞는 함수를 찾아서 실행 (없으면 기본 경로로)
-    const view = routes[path] || routes['/'];
-    view();
+    const route = routes[path] || routes['/'];
+
+    // 레이아웃이 변경되어야 하는 경우에만 전체를 다시 그림
+    if (currentLayout !== route.layout) {
+        currentLayout = route.layout;
+        if (route.layout === 'app') {
+            renderMainLayout();
+        }
+    }
+    
+    // 레이아웃에 맞는 뷰(콘텐츠)를 그림
+    route.view();
+    
+    // 하단 바의 활성 탭 업데이트
+    if(route.layout === 'app') {
+        updateNavActiveState(path);
+    }
 };
 
-// 웹페이지가 처음 로드되거나, 뒤로/앞으로 가기 버튼을 누를 때 라우터 실행
+function updateNavActiveState(path) {
+    document.querySelectorAll('.nav-item').forEach(item => {
+        if (item.getAttribute('href') === path) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+}
+
 window.addEventListener('popstate', router);
 document.addEventListener('DOMContentLoaded', () => {
-    // data-link 속성을 가진 링크 클릭 시, 새로고침 대신 navigateTo 함수 호출
     document.body.addEventListener('click', (e) => {
-        if (e.target.matches('[data-link]')) {
+        const navLink = e.target.closest('[data-link]');
+        if (navLink) {
             e.preventDefault();
-            navigateTo(e.target.href);
+            navigateTo(navLink.href);
         }
     });
     router();
