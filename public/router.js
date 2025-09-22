@@ -18,36 +18,62 @@ export const navigateTo = (url) => {
     router();
 };
 
+// (기존 내용과 동일)
 const router = async () => {
-    const path = location.pathname;
-    const route = routes[path] || routes['/'];
+    // 1. 경로 매칭 로직 수정
+    const potentialMatches = Object.keys(routes).map(routePath => {
+        return {
+            route: routes[routePath],
+            isMatch: location.pathname === routePath
+        };
+    });
 
-    // 1. 페이지 접근 권한 확인
-    if (!route.public && !isLoggedIn()) {
-        // 로그인이 필요한 페이지인데, 로그인이 안 되어있으면
-        navigateTo('/login'); // 로그인 페이지로 강제 이동
-        return; // 아래 코드 실행 중단
+    // 동적 경로를 위한 정규식 매칭 추가
+    const pathToRegex = path => new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$");
+    
+    const potentialDynamicMatches = Object.keys(routes).map(routePath => {
+        return {
+            route: routes[routePath],
+            result: location.pathname.match(pathToRegex(routePath))
+        };
+    });
+
+    let match = potentialDynamicMatches.find(potentialMatch => potentialMatch.result !== null);
+
+    if (!match) {
+        // 일치하는 경로가 없으면 기본 경로로 설정
+        match = {
+            route: routes['/'],
+            result: [location.pathname]
+        };
     }
-    // 반대로, 로그인 되어 있는데 로그인/회원가입 페이지로 가려고 하면
+
+    const route = match.route;
+
+    // 2. 페이지 접근 권한 확인 (기존 로직과 동일)
+    if (!route.public && !isLoggedIn()) {
+        navigateTo('/login');
+        return;
+    }
     if (route.public && isLoggedIn()) {
-        navigateTo('/main'); // 메인 페이지로 강제 이동
+        navigateTo('/main');
         return;
     }
 
-    // 2. 레이아웃 렌더링
+    // 3. 레이아웃 렌더링 (기존 로직과 동일)
     if (currentLayout !== route.layout) {
         currentLayout = route.layout;
         if (route.layout === 'app') {
-            UI.renderAppLayout(); // 메인 레이아웃을 먼저 그림
+            UI.renderAppLayout();
         }
     }
     
-    // 3. 콘텐츠 렌더링
+    // 4. 콘텐츠 렌더링 (기존 로직과 동일)
     route.render(); 
     
-    // 4. 네비게이션 상태 업데이트
+    // 5. 네비게이션 상태 업데이트 (기존 로직과 동일)
     if (route.layout === 'app') {
-        updateNavActiveState(path);
+        updateNavActiveState(location.pathname);
     }
 };
 
