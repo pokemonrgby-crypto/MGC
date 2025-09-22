@@ -15,7 +15,31 @@ export const renderLogin = () => { app.innerHTML = LoginView(); };
 
 // 메인 레이아웃을 그리고, 그 안의 content-area에 특정 뷰를 그림
 export const renderAppLayout = () => { app.innerHTML = MainLayout(); };
-export const renderMain = () => { document.getElementById('content-area').innerHTML = MainView(); };
+
+
+function renderWorldList(worlds) {
+  const container = document.getElementById('world-list-container');
+  if (!container) return;
+  container.innerHTML = (worlds || []).map(w => `
+    <div class="world-card" data-id="${w.id}">
+      <img src="${w.image_url || ''}" alt="" class="thumb"/>
+      <div class="title">${w.name}</div>
+      <div class="intro">${w.description ?? ''}</div>
+      <button class="btn-like" data-like="${w.id}">♡ <span class="like-count">${w.likes ?? 0}</span></button>
+    </div>
+  `).join('') || `<p>아직 생성된 세계가 없어.</p>`;
+}
+export async function refreshWorlds() {
+  const { worlds } = await getWorlds();
+  renderWorldList(worlds);
+}
+
+
+// renderMain 함수 수정: MainView를 렌더링한 후, 목록을 바로 새로고침합니다.
+export const renderMain = () => {
+    document.getElementById('content-area').innerHTML = MainView();
+    refreshWorlds();
+};
 export const renderCreate = () => { document.getElementById('content-area').innerHTML = CreateView(); };
 export const renderMyInfo = () => { document.getElementById('content-area').innerHTML = MyInfoView(); };
 
