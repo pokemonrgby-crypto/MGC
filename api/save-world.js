@@ -1,4 +1,4 @@
-import { pool } from './db.js';
+import { getDbPool } from './db.js';
 import jwt from 'jsonwebtoken';
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -13,8 +13,20 @@ export default async function handler(req, res) {
         const decoded = jwt.verify(token, jwtSecret);
         const userId = decoded.userId;
 
-        // ... (쿨타임 확인 로직은 여기에 추가해야 함) ...
-
+        // (쿨타임 확인 로직 추가)
+        const pool = getDbPool(); // ★★★ 요청이 들어온 후에야 DB 연결을 만듭니다.
+        const userResult = await pool.query('SELECT last_world_creation FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length > 0) {
+            const lastCreation = userResult.rows[0].last_world_creation;
+            if (lastCreation) {
+                const now = new Date();
+                const last = new Date(lastCreation);
+                if (now.toDateString() === last.toDateString()) {
+                    return res.status(429).json({ message: '세계관은 하루에 한 번만 생성할 수 있습니다.' });
+                }
+            }
+        }
+        
         const { worldData, imageUrl } = req.body;
         if (!worldData || !worldData.name) {
             return res.status(400).json({ message: '올바른 세계관 데이터가 아닙니다.' });
