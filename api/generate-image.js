@@ -11,8 +11,12 @@ export default async function handler(req, res) {
     }
 
     const genAI = new GoogleGenerativeAI(userApiKey);
-    // 안정성을 위해 imagen-2 모델을 사용합니다.
-    const model = genAI.getGenerativeModel({ model: 'imagen-2' });
+
+    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+    // 공식 문서에 명시된 정확한 모델 'gemini-2.5-flash-image-preview'로 변경합니다.
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image-preview' });
+    // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
     const result = await model.generateContent(prompt);
     const imgBase64 = result?.response?.candidates?.[0]?.content?.parts?.[0]?.inline_data?.data;
 
