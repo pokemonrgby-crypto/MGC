@@ -1,9 +1,9 @@
-// 이 코드는 서버(Netlify)에서 실행됩니다.
+// 이 코드는 서버에서 실행됩니다.
 const { Pool } = require('pg');
 
-// Netlify가 자동으로 설정해준 환경 변수를 사용합니다.
+// Vercel 환경 변수인 'POSTGRES_URL'을 사용하도록 수정합니다.
 const pool = new Pool({
-  connectionString: process.env.NETLIFY_DATABASE_URL,
+  connectionString: process.env.POSTGRES_URL, // ★★★ 바로 이 부분입니다! ★★★
 });
 
 module.exports = { pool };
