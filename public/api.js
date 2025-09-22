@@ -1,4 +1,4 @@
-// 서버 함수를 호출하기 위한 헬퍼 함수들
+import { getToken } from './session.js';
 
 // 1. 회원가입 요청
 export async function registerUser(nickname, password) {
@@ -20,5 +20,16 @@ export async function loginUser(nickname, password) {
     return response.json();
 }
 
-// 3. 세계관 생성 요청 (나중에 구현)
-// export async function generateWorld() { ... }
+// 3. 생성된 세계관 저장 요청
+export async function saveWorld(worldData) {
+    const token = getToken();
+    const response = await fetch('/.netlify/functions/save-world', { // 호출 주소 변경
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ worldData }), // AI가 생성한 데이터를 통째로 보냄
+    });
+    return response.json();
+}
