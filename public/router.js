@@ -1,3 +1,4 @@
+// (기존 내용과 동일)
 import * as UI from './ui.js';
 import { isLoggedIn } from './session.js'; // isLoggedIn 함수 import
 
@@ -7,7 +8,9 @@ const routes = {
     '/main':   { render: UI.renderMain,     layout: 'app',  public: false },
     '/create': { render: UI.renderCreate,   layout: 'app',  public: false },
     '/my-info':{ render: UI.renderMyInfo,   layout: 'app',  public: false },
+    '/world/:id': { render: UI.renderWorldDetail, layout: 'app', public: false }, // 상세 페이지 라우트 추가
 };
+// (기존 내용과 동일)
 let currentLayout = null;
 
 export const navigateTo = (url) => {
