@@ -1,8 +1,7 @@
-// 앱의 메인 컨테이너
 const app = document.getElementById('app');
 
-/** 회원가입 폼을 화면에 그립니다. */
-export function renderRegisterForm() {
+/** 회원가입 뷰를 렌더링합니다. */
+export const RegisterView = () => {
     app.innerHTML = `
         <div class="form-container">
             <h2>회원가입</h2>
@@ -21,14 +20,19 @@ export function renderRegisterForm() {
                 </div>
                 <button type="submit" class="btn">가입하기</button>
             </form>
-            <div id="message" class="message-area"></div>
-            <p class="switch-form">이미 계정이 있으신가요? <a href="#" id="show-login">로그인</a></p>
+            <div id="message" class="message-area" style="display:none;"></div>
+            <p class="switch-form">이미 계정이 있으신가요? <a href="/login" data-link>로그인</a></p>
         </div>
     `;
-}
+};
 
-/** 로그인 폼을 화면에 그립니다. (나중에 구현) */
-export function renderLoginForm() {
-    // TODO: 로그인 UI 구현
-    console.log('로그인 폼을 여기에 표시합니다.');
-}
+/** 로그인 뷰를 렌더링합니다. */
+export const LoginView = () => {
+    app.innerHTML = `
+        <div class="form-container">
+            <h2>로그인</h2>
+            <p>로그인 폼이 여기에 표시됩니다.</p>
+            <p class="switch-form">계정이 없으신가요? <a href="/" data-link>회원가입</a></p>
+        </div>
+    `;
+};
