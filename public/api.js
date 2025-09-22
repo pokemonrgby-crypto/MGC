@@ -43,3 +43,23 @@ export async function saveWorld(worldData, imageUrl) {
     });
     return response.json();
 }
+
+// 5. 모든 세계관 목록 가져오기
+export async function getWorlds() {
+    const response = await fetch('/api/get-worlds');
+    return response.json();
+}
+
+// 6. 특정 세계관에 '좋아요' 보내기
+export async function likeWorld(worldId) {
+    const token = getToken();
+    const response = await fetch('/api/like-world', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ worldId }),
+    });
+    return response.json();
+}
