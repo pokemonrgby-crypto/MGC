@@ -42,3 +42,9 @@ export async function createWorld({ keyword, userApiKey }) {
   });
   return r.json();
 }
+
+// (기존 getWorlds 함수 아래에 추가)
+export async function getWorld(id) {
+  const r = await fetch(`/api/get-world?id=${id}`);
+  return r.json();
+}
