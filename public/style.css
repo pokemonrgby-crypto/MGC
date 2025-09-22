@@ -154,3 +154,19 @@ input[type="password"]:focus {
 .nav-item.active {
     color: var(--text-color);
 }
+
+/* --- 하단 바 아이콘 스타일 --- */
+.nav-item svg {
+    /* 크기는 여기서 조절 */
+    width: 24px;
+    height: 24px;
+    margin-bottom: 2px; /* 라벨과의 간격 */
+}
+
+/* 활성화된 탭의 아이콘 선 굵기 변경 */
+.nav-item.active {
+    color: var(--text-color);
+}
+.nav-item.active svg {
+    stroke-width: 2.5; /* 활성화 시 선을 살짝 굵게 */
+}
