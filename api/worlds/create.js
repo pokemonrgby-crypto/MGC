@@ -21,31 +21,21 @@ export default async function handler(req, res) {
     const { keyword, userApiKey } = req.body || {};
     if (!userApiKey) return res.status(400).json({ message: '브라우저에 저장된 Gemini API 키가 필요합니다.' });
 
-    // 3) 1일 1회(KST 자정 리셋) 확인
-    
+    // 3) 1일 1회(KST 자정 리셋) 확인 (주석 처리됨)
     const pool = getDbPool();
-    /*
-    const ures = await pool.query('SELECT last_world_creation FROM users WHERE id = $1', [userId]);
-    const last = ures.rows?.[0]?.last_world_creation;
-    if (last && isSameKSTDate(last, nowKST())) {
-      return res.status(429).json({ message: '오늘은 이미 세계를 창조했어. 자정(KST) 이후에 다시 시도해줘.' });
-    }
-    */
-
-    // 4) 프롬프트 파일 읽기 (하드코딩 금지)
+    
+    // 4) 프롬프트 파일 읽기
     const promptPath = path.join(process.cwd(), 'prompts', 'world_generate.md');
     const systemMd = await fs.readFile(promptPath, 'utf8');
     const prompt = systemMd.replace('{{KEYWORD}}', String(keyword ?? '').trim());
 
-    // 5) 모델 호출 (랜덤+폴백)
+    // 5) 텍스트 모델 호출
     const genAI = new GoogleGenerativeAI(userApiKey);
     const { primary, fallback } = pickModels();
     async function run(modelName) {
       const model = genAI.getGenerativeModel({
         model: modelName,
-        generationConfig: {
-          responseMimeType: "application/json", // JSON 응답 강제
-        },
+        generationConfig: { responseMimeType: "application/json" },
       });
       const res1 = await model.generateContent(prompt + '\n\n[응답은 JSON만]');
       return res1.response.text();
@@ -56,7 +46,6 @@ export default async function handler(req, res) {
 
     let world;
     try {
-      // 코드 블록(```json ... ```)을 제거하는 로직 추가
       const cleanedText = text.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
       world = JSON.parse(cleanedText); 
     }
@@ -64,21 +53,30 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: '모델 응답이 유효 JSON이 아니야.', raw: (text || '').slice(0, 400) });
     }
 
-    // 6) 이미지 생성 (기본: Imagen 3; 업로드는 imgbb 재사용)
+    // 6) 이미지 생성
     const proto = req.headers['x-forwarded-proto'] || 'https';
     const host = req.headers.host;
     const imgRes = await fetch(`${proto}://${host}/api/generate-image`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt: `1:1 world profile illustration of "${world.name}". 한 장의 상징적 전경, UI 카드용.`,
+        prompt: `Concept art for a UI card, a symbolic landscape of a fantasy world named "${world.name}". vibrant, epic, 1:1 aspect ratio.`,
         userApiKey
       })
     });
     const imgJson = await imgRes.json();
-    const imageUrl = imgJson?.imageUrl || '';
 
-    // 7) DB 저장(현재 스키마 유지: description/landmarks/organizations/npcs)
+    // 이미지 생성 실패 시, 받은 에러 메시지를 포함하여 요청을 중단하고 클라이언트에 알립니다.
+    if (!imgRes.ok) {
+        console.error('이미지 생성 실패:', imgJson.error);
+        return res.status(500).json({ 
+            message: `세계관 텍스트는 생성되었으나, 이미지 생성에 실패했습니다.`,
+            error: imgJson.error || '알 수 없는 이미지 생성 오류'
+        });
+    }
+    const imageUrl = imgJson.imageUrl;
+
+    // 7) DB 저장
     const insert = await pool.query(
       `INSERT INTO worlds (name, description, landmarks, organizations, npcs, image_url, created_by_user_id, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7, NOW())
@@ -99,6 +97,7 @@ export default async function handler(req, res) {
     return res.status(201).json({ world: insert.rows[0] });
   } catch (err) {
     console.error('[worlds/create] error', err);
-    return res.status(500).json({ message: '세계관 생성 중 오류가 발생했어.' });
+    // 이제 클라이언트는 더 구체적인 에러 메시지를 받게 됩니다.
+    return res.status(500).json({ message: '세계관 생성 중 오류가 발생했어.', error: err.message });
   }
 }
