@@ -79,6 +79,7 @@ export const renderCreate = () => { document.getElementById('content-area').inne
 export const renderMyInfo = () => { document.getElementById('content-area').innerHTML = MyInfoView(); };
 
 // 상세 정보 페이지를 렌더링하는 함수입니다.
+// 수정 후
 export const renderWorldDetail = async () => {
     const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = WorldDetailView(null); // 로딩 스피너 먼저 표시
@@ -86,7 +87,18 @@ export const renderWorldDetail = async () => {
     try {
         const id = location.pathname.split('/').pop();
         const { world } = await getWorld(id);
-        contentArea.innerHTML = WorldDetailView(world); // 데이터로 뷰 렌더링
+
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        // DB에서 온 JSON 문자열 데이터를 실제 배열로 파싱합니다.
+        const parsedWorld = {
+            ...world,
+            landmarks: world.landmarks ? JSON.parse(world.landmarks) : [],
+            organizations: world.organizations ? JSON.parse(world.organizations) : [],
+            npcs: world.npcs ? JSON.parse(world.npcs) : [],
+        };
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+
+        contentArea.innerHTML = WorldDetailView(parsedWorld); // 파싱된 데이터로 뷰 렌더링
     } catch (error) {
         console.error('Failed to load world details:', error);
         contentArea.innerHTML = `<div class="empty-message"><p>세계관 정보를 불러오는 데 실패했습니다.</p></div>`;
