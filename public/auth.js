@@ -1,15 +1,15 @@
 import { registerUser } from './api.js';
+import { navigateTo } from './router.js';
 
-/** 회원가입 폼 제출 이벤트를 처리합니다. */
 export async function handleRegisterSubmit(event) {
-    event.preventDefault(); // 폼의 기본 제출 동작(새로고침)을 막습니다.
+    event.preventDefault();
 
     const nickname = document.getElementById('nickname').value;
     const password = document.getElementById('password').value;
     const passwordConfirm = document.getElementById('password-confirm').value;
     const messageDiv = document.getElementById('message');
+    messageDiv.style.display = 'block'; // 메시지 창 보이기
 
-    // 1. 입력값 검증 (클라이언트 측)
     if (password !== passwordConfirm) {
         messageDiv.textContent = '비밀번호가 일치하지 않습니다.';
         messageDiv.className = 'message-area error';
@@ -25,20 +25,18 @@ export async function handleRegisterSubmit(event) {
     messageDiv.className = 'message-area info';
 
     try {
-        // 2. 서버에 회원가입 요청
         const result = await registerUser(nickname, password);
         
-        // 3. 서버 응답에 따른 메시지 표시
         if (result.message.includes('성공')) {
-            messageDiv.textContent = result.message + ' 잠시 후 로그인 화면으로 이동합니다.';
+            messageDiv.textContent = result.message;
             messageDiv.className = 'message-area success';
-            // TODO: 성공 후 로그인 폼으로 자동 전환
+            setTimeout(() => navigateTo('/login'), 2000); // 2초 후 로그인 페이지로 이동
         } else {
             messageDiv.textContent = '오류: ' + result.message;
             messageDiv.className = 'message-area error';
         }
     } catch (error) {
-        messageDiv.textContent = '네트워크 오류가 발생했습니다.';
+        messageDiv.textContent = '네트워크 오류 또는 서버에 문제가 발생했습니다.';
         messageDiv.className = 'message-area error';
     }
 }
