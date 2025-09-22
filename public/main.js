@@ -1,29 +1,12 @@
 import { navigateTo } from './router.js';
 import { handleRegisterSubmit, handleLoginSubmit, handleLogout } from './auth.js';
 import { saveApiKey, getApiKey } from './apiKey.js';
-import { createWorld, getWorlds, likeWorld } from './api.js';
+import { createWorld, likeWorld } from './api.js';
+import { refreshWorlds } from './ui.js'; // ui.js에서 refreshWorlds 함수를 가져옵니다.
 
-function renderWorldList(worlds) {
-  const container = document.getElementById('world-list-container');
-  if (!container) return;
-  container.innerHTML = (worlds || []).map(w => `
-    <div class="world-card" data-id="${w.id}">
-      <img src="${w.image_url || ''}" alt="" class="thumb"/>
-      <div class="title">${w.name}</div>
-      <div class="intro">${w.description ?? ''}</div>
-      <button class="btn-like" data-like="${w.id}">♡ <span class="like-count">${w.likes ?? 0}</span></button>
-    </div>
-  `).join('') || `<p>아직 생성된 세계가 없어.</p>`;
-}
-
-async function refreshWorlds() {
-  const { worlds } = await getWorlds();
-  renderWorldList(worlds);
-}
-
-// 최초 로드
+// 최초 로드 시 router가 refresh를 처리하므로 아래 코드는 삭제하거나 비워둡니다.
 document.addEventListener('DOMContentLoaded', () => {
-  refreshWorlds();
+  // router()가 초기 렌더링 및 데이터 로딩을 모두 처리합니다.
 });
 
 // 전역 클릭 핸들러
@@ -43,7 +26,7 @@ document.addEventListener('click', async (e) => {
       const res = await createWorld({ keyword: kw, userApiKey: apiKey });
       if (res?.world) {
         status.textContent = '완료! 목록을 새로고침 했어.';
-        await refreshWorlds();
+        await refreshWorlds(); // ui.js에서 가져온 함수를 사용합니다.
       } else {
         status.textContent = res?.message || '생성 실패';
       }
@@ -70,9 +53,10 @@ document.addEventListener('click', async (e) => {
     } finally {
       likeBtn.disabled = false;
     }
+    return; // 좋아요 클릭 시 상세 페이지로 넘어가지 않도록 여기서 이벤트를 종료합니다.
   }
 
-  // 3) API 키 저장 (추가된 부분)
+  // 3) API 키 저장
   if (e.target.id === 'save-api-key-button') {
     const apiKeyInput = document.getElementById('api-key-input');
     const messageDiv = document.getElementById('api-key-message');
@@ -91,11 +75,11 @@ document.addEventListener('click', async (e) => {
 
     setTimeout(() => {
         messageDiv.style.display = 'none';
-    }, 3000); // 3초 후에 메시지 숨김
+    }, 3000);
+    return;
   }
 
-
-  // 4) 세계관 카드 클릭 (새로 추가된 부분)
+  // 4) 세계관 카드 클릭
   const worldCard = e.target.closest('.world-card');
   if (worldCard) {
       const worldId = worldCard.dataset.id;
@@ -104,8 +88,4 @@ document.addEventListener('click', async (e) => {
       }
       return;
   }
-
-
-
-  
 });
