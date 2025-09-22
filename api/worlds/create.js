@@ -22,8 +22,9 @@ export default async function handler(req, res) {
     if (!userApiKey) return res.status(400).json({ message: '브라우저에 저장된 Gemini API 키가 필요합니다.' });
 
     // 3) 1일 1회(KST 자정 리셋) 확인
-    /*
+    
     const pool = getDbPool();
+    /*
     const ures = await pool.query('SELECT last_world_creation FROM users WHERE id = $1', [userId]);
     const last = ures.rows?.[0]?.last_world_creation;
     if (last && isSameKSTDate(last, nowKST())) {
