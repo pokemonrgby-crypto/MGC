@@ -1,103 +1,65 @@
 import { navigateTo } from './router.js';
 import { handleRegisterSubmit, handleLoginSubmit, handleLogout } from './auth.js';
-import { saveApiKey, getApiKey } from './apiKey.js'; // apiKey.js에서 함수 import
-import { saveWorld } from './api.js'; 
+import { saveApiKey, getApiKey } from './apiKey.js';
+import { saveWorld, generateImage } from './api.js'; // generateImage 추가
 
-// 페이지가 로드될 때, 저장된 API 키가 있으면 입력창에 표시
-function displayApiKey() {
-    const apiKeyInput = document.getElementById('api-key-input');
-    if (apiKeyInput) {
-        const storedKey = getApiKey();
-        if (storedKey) {
-            apiKeyInput.value = storedKey;
-        }
-    }
+const { GoogleGenerativeAI } = window;
+
+// --- Helper Functions ---
+function displayApiKey() { /* ... 기존과 동일 ... */ }
+function handleSaveApiKey() { /* ... 기존과 동일 ... */ }
+
+function renderWorldCard(world) {
+    const container = document.getElementById('world-card-container');
+    if (!container || !world) return;
+    const landmarksList = world.landmarks.map(l => `<li><strong>${l.name}</strong>: ${l.description}</li>`).join('');
+    
+    // 이미지 URL이 있으면 이미지 태그 추가
+    const imageHTML = world.image_url ? `<img src="${world.image_url}" alt="${world.name} 대표 이미지" class="world-image">` : '';
+
+    container.innerHTML = `
+        <div class="world-card">
+            ${imageHTML}
+            <h2>${world.name}</h2>
+            <p class="world-description">${world.description}</p>
+            <h3>주요 명소</h3>
+            <ul>${landmarksList}</ul>
+        </div>
+    `;
 }
 
-// API 키 저장 로직
-function handleSaveApiKey() {
-    const apiKeyInput = document.getElementById('api-key-input');
-    const messageDiv = document.getElementById('api-key-message');
-
-    if (apiKeyInput && apiKeyInput.value) {
-        saveApiKey(apiKeyInput.value);
-        messageDiv.textContent = 'API 키가 성공적으로 저장되었습니다.';
-        messageDiv.className = 'message-area success';
-        messageDiv.style.display = 'block';
-    } else {
-        messageDiv.textContent = 'API 키를 입력해주세요.';
-        messageDiv.className = 'message-area error';
-        messageDiv.style.display = 'block';
-    }
-    // 2초 후에 메시지 숨기기
-    setTimeout(() => { messageDiv.style.display = 'none'; }, 2000);
-}
-
-
-// --- 기존 이벤트 리스너들 ---
-
-// 폼 제출 이벤트 리스너
+// --- Event Listeners ---
 document.addEventListener('submit', (event) => {
-    if (event.target.id === 'register-form') {
-        handleRegisterSubmit(event);
-    }
-    if (event.target.id === 'login-form') {
-        handleLoginSubmit(event);
-    }
+    if (event.target.id === 'register-form') { handleRegisterSubmit(event); }
+    if (event.target.id === 'login-form') { handleLoginSubmit(event); }
 });
 
-// 클릭 이벤트 리스너
-document.addEventListener('click', (event) => {
-    if (event.target.id === 'logout-button') {
-        handleLogout();
-    }
-    // API 키 저장 버튼 클릭 이벤트 처리 추가
-    if (event.target.id === 'save-api-key-button') {
-        handleSaveApiKey();
-    }
-});
-
-
-// 클릭 이벤트 리스너
 document.addEventListener('click', async (event) => {
-    if (event.target.id === 'logout-button') {
-        handleLogout();
-    }
-    if (event.target.id === 'save-api-key-button') {
-        handleSaveApiKey();
-    }
+    // 버튼 클릭 이벤트 통합
+    if (event.target.id === 'logout-button') { handleLogout(); }
+    if (event.target.id === 'save-api-key-button') { handleSaveApiKey(); }
 
-    // --- 세계관 생성 버튼 로직 (프롬프트 파일 로드 기능 추가) ---
+    // 세계관 생성 버튼 로직
     if (event.target.id === 'generate-world-button') {
         const userApiKey = getApiKey();
-        if (!userApiKey) {
-            alert('먼저 내 정보 탭에서 Gemini API 키를 저장해주세요!');
-            return;
-        }
-
+        if (!userApiKey) { alert('먼저 내 정보 탭에서 Gemini API 키를 저장해주세요!'); return; }
         const keyword = document.getElementById('world-keyword').value;
-        if (!keyword) {
-            alert('키워드를 입력해주세요!');
-            return;
-        }
+        if (!keyword) { alert('키워드를 입력해주세요!'); return; }
 
         const statusDiv = document.getElementById('generation-status');
         const button = event.target;
         
-        statusDiv.innerHTML = '<div class="spinner"></div><p>사용자 키로 세계를 창조하는 중입니다...</p>';
+        statusDiv.innerHTML = '<div class="spinner"></div><p>세계관 정보를 생성 중입니다...</p>';
         statusDiv.className = 'message-area info';
         statusDiv.style.display = 'flex';
         button.disabled = true;
 
         try {
-            // 1. (파일 로드) 외부 프롬프트 파일을 불러옴
+            // 1. 텍스트 정보 생성 (Client-side)
             const response = await fetch('/prompts/world-prompt.txt');
-            if (!response.ok) {
-                throw new Error('프롬프트 파일을 불러오는 데 실패했습니다.');
-            }
+            if (!response.ok) throw new Error('프롬프트 파일 로드 실패');
             const promptTemplate = await response.text();
-
-            // 2. (클라이언트) 불러온 프롬프트에 키워드를 삽입하여 AI 호출
+            
             const genAI = new GoogleGenerativeAI(userApiKey);
             const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const finalPrompt = promptTemplate.replace('{INPUT_KEYWORD}', keyword);
@@ -106,23 +68,37 @@ document.addEventListener('click', async (event) => {
             const responseText = result.response.text();
             const worldData = JSON.parse(responseText.replace(/```json|```/g, '').trim());
 
-            // 3. (서버) 생성된 데이터를 서버에 저장 요청
-            statusDiv.innerHTML = '<div class="spinner"></div><p>생성된 세계를 데이터베이스에 기록 중입니다...</p>';
-            const saveResult = await saveWorld(worldData);
+            // 2. 이미지 생성 (Server-side)
+            statusDiv.innerHTML = '<div class="spinner"></div><p>세계관 대표 이미지를 생성 중입니다...</p>';
+            const imageResult = await generateImage(worldData.imagePrompt);
+            if (!imageResult.imageUrl) throw new Error('이미지 생성에 실패했습니다.');
+            
+            // 3. 모든 정보 서버에 저장 (Server-side)
+            statusDiv.innerHTML = '<div class="spinner"></div><p>생성된 세계를 기록 중입니다...</p>';
+            const saveResult = await saveWorld(worldData, imageResult.imageUrl);
 
             if (saveResult.world) {
                 statusDiv.style.display = 'none';
-                renderWorldCard(saveResult.world); // 성공 시 카드 렌더링
+                renderWorldCard(saveResult.world);
             } else {
                 statusDiv.textContent = saveResult.message;
                 statusDiv.className = 'message-area error';
             }
         } catch (error) {
             console.error(error);
-            statusDiv.textContent = '세계관 창조에 실패했습니다. API 키 또는 프롬프트를 확인해주세요.';
+            statusDiv.textContent = '세계관 창조에 실패했습니다: ' + error.message;
             statusDiv.className = 'message-area error';
         } finally {
             button.disabled = false;
         }
     }
+});
+
+// --- Initial Load ---
+document.addEventListener('DOMContentLoaded', () => {
+    // MutationObserver를 이용해 동적으로 생성된 UI에도 API 키 표시
+    const observer = new MutationObserver(() => {
+        displayApiKey();
+    });
+    observer.observe(document.getElementById('app'), { childList: true, subtree: true });
 });
