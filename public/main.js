@@ -71,4 +71,26 @@ document.addEventListener('click', async (e) => {
       likeBtn.disabled = false;
     }
   }
+
+  // 3) API 키 저장 (추가된 부분)
+  if (e.target.id === 'save-api-key-button') {
+    const apiKeyInput = document.getElementById('api-key-input');
+    const messageDiv = document.getElementById('api-key-message');
+    const apiKey = apiKeyInput.value.trim();
+
+    if (apiKey) {
+      saveApiKey(apiKey);
+      messageDiv.textContent = 'API 키가 성공적으로 저장되었습니다.';
+      messageDiv.className = 'message-area success';
+      messageDiv.style.display = 'block';
+    } else {
+      messageDiv.textContent = 'API 키를 입력해주세요.';
+      messageDiv.className = 'message-area error';
+      messageDiv.style.display = 'block';
+    }
+
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 3000); // 3초 후에 메시지 숨김
+  }
 });
