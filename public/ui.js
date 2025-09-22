@@ -38,7 +38,7 @@ function renderWorldList(worlds) {
 
     return `
       <div class="world-card" data-id="${w.id}">
-        <img src="${w.image_url || 'https://via.placeholder.com/400x180.png?text=No+Image'}" alt="${w.name}" class="world-image"/>
+        <img src="${w.image_url || 'https://placehold.co/400x180.png?text=No+Image'}" alt="${w.name}" class="world-image"/>
         <div class="card-content">
           <h3>${w.name}</h3>
           <p>${w.description || '소개가 없습니다.'}</p>
