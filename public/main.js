@@ -93,4 +93,19 @@ document.addEventListener('click', async (e) => {
         messageDiv.style.display = 'none';
     }, 3000); // 3초 후에 메시지 숨김
   }
+
+
+  // 4) 세계관 카드 클릭 (새로 추가된 부분)
+  const worldCard = e.target.closest('.world-card');
+  if (worldCard) {
+      const worldId = worldCard.dataset.id;
+      if (worldId) {
+          navigateTo(`/world/${worldId}`);
+      }
+      return;
+  }
+
+
+
+  
 });
