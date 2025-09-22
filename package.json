@@ -2,7 +2,7 @@
   "name": "mgc-project",
   "version": "1.0.0",
   "type": "module",
-  "description": "MGCUT",
+  "description": "AI Text Battle Game",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
