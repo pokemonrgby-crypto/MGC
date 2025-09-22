@@ -200,3 +200,97 @@ input[type="password"]:focus {
 .logout-btn {
     background: #555; /* 로그아웃 버튼은 다른 색으로 */
 }
+
+/* --- 메인 화면 (세계관 목록) --- */
+.view-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+#world-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    color: var(--text-secondary-color);
+}
+.empty-message {
+    text-align: center;
+    color: var(--text-secondary-color);
+    padding: 2rem;
+}
+
+/* --- 세계관 카드 (목록용) --- */
+.world-card {
+    background: var(--input-bg-color);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.world-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+.world-card .world-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.world-card .card-content {
+    padding: 1rem 1.2rem;
+}
+.world-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+.world-card p {
+    font-size: 0.9rem;
+    color: var(--text-secondary-color);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+.like-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary-color);
+    padding: 0.5rem 0.8rem;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s, border-color 0.3s;
+}
+.like-button:hover {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.like-button.liked {
+    color: #ff4757; /* 핑크/레드 계열 색상 */
+    border-color: #ff4757;
+}
+.like-button.liked svg {
+    fill: #ff4757;
+}
+.like-button .like-count {
+    font-weight: bold;
+}
+.creator {
+    font-size: 0.8rem;
+    color: var(--text-secondary-color);
+}
