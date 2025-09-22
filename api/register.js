@@ -1,4 +1,4 @@
-import { pool } from './db.js';
+import { getDbPool } from './db.js';
 import bcrypt from 'bcryptjs';
 
 export default async function handler(req, res) {
@@ -13,13 +13,13 @@ export default async function handler(req, res) {
     }
 
     try {
+        const pool = getDbPool(); // ★★★ 요청이 들어온 후에야 DB 연결을 만듭니다.
         const hashedPassword = await bcrypt.hash(password, 10);
-        const result = await pool.query(
-            'INSERT INTO users (nickname, password_hash) VALUES ($1, $2) RETURNING id',
+        await pool.query(
+            'INSERT INTO users (nickname, password_hash) VALUES ($1, $2)',
             [nickname, hashedPassword]
         );
         
-        console.log(`새로운 사용자 등록: ${nickname}, ID: ${result.rows[0].id}`);
         return res.status(201).json({ message: '회원가입이 성공적으로 완료되었습니다.' });
 
     } catch (error) {
