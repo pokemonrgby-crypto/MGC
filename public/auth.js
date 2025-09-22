@@ -44,15 +44,45 @@ export async function handleRegisterSubmit(event) {
 // import { loginUser } from './api.js'; // 나중에 실제 로그인 API와 연동
 
 /** 로그인 폼 제출 이벤트를 처리합니다. */
+import { registerUser, loginUser } from './api.js'; // loginUser import 추가
+import { navigateTo } from './router.js';
+import { saveToken, removeToken } from './session.js'; // session.js에서 함수 import
+
+// ... handleRegisterSubmit 함수는 기존과 동일 ...
+
+/** 로그인 폼 제출 이벤트를 처리합니다. */
 export async function handleLoginSubmit(event) {
     event.preventDefault();
+
+    const nickname = document.getElementById('nickname').value;
+    const password = document.getElementById('password').value;
     const messageDiv = document.getElementById('message');
     messageDiv.style.display = 'block';
-    
-    // 지금은 실제 서버 연동 없이 성공했다고 가정
-    messageDiv.textContent = '로그인 성공! 메인 화면으로 이동합니다.';
-    messageDiv.className = 'message-area success';
 
-    // 1.5초 후 메인 화면으로 이동
-    setTimeout(() => navigateTo('/main'), 1500);
+    messageDiv.textContent = '로그인 중...';
+    messageDiv.className = 'message-area info';
+
+    try {
+        const result = await loginUser(nickname, password);
+        
+        if (result.token) {
+            saveToken(result.token); // 응답받은 토큰을 저장
+            messageDiv.textContent = result.message;
+            messageDiv.className = 'message-area success';
+            setTimeout(() => navigateTo('/main'), 1500); // 1.5초 후 메인 페이지로 이동
+        } else {
+            messageDiv.textContent = '오류: ' + result.message;
+            messageDiv.className = 'message-area error';
+        }
+    } catch (error) {
+        messageDiv.textContent = '네트워크 오류 또는 서버에 문제가 발생했습니다.';
+        messageDiv.className = 'message-area error';
+    }
+}
+
+/** 로그아웃을 처리합니다. */
+export function handleLogout() {
+    removeToken(); // 저장된 토큰 삭제
+    navigateTo('/login'); // 로그인 페이지로 이동
+    console.log('로그아웃 되었습니다.');
 }
