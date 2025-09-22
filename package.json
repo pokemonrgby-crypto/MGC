@@ -8,9 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+"dependencies": {
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "@google/generative-ai": "^0.14.1"
   }
 }
