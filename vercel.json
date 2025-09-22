@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/get-world",
+      "destination": "/api/get-world.js"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
