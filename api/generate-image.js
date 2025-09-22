@@ -35,8 +35,7 @@ export default async function handler(req, res) {
         headers: form.getHeaders(), // 이 줄을 추가하세요.
         body: form 
     });
-    
-    const uploadRes = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: form });
+
     const uploadJson = await uploadRes.json();
     if (!uploadRes.ok) throw new Error(uploadJson?.error?.message || 'imgbb 업로드 실패');
     return res.status(200).json({ imageUrl: uploadJson.data.url });
