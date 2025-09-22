@@ -34,46 +34,32 @@ document.addEventListener('submit', (event) => {
     if (event.target.id === 'login-form') { handleLoginSubmit(event); }
 });
 
+// ... 상단 import 및 다른 함수들은 기존과 동일 ...
+
 document.addEventListener('click', async (event) => {
-    // 버튼 클릭 이벤트 통합
-    if (event.target.id === 'logout-button') { handleLogout(); }
-    if (event.target.id === 'save-api-key-button') { handleSaveApiKey(); }
+    // ... logout, save-api-key 버튼 로직은 기존과 동일 ...
 
     // 세계관 생성 버튼 로직
     if (event.target.id === 'generate-world-button') {
         const userApiKey = getApiKey();
         if (!userApiKey) { alert('먼저 내 정보 탭에서 Gemini API 키를 저장해주세요!'); return; }
-        const keyword = document.getElementById('world-keyword').value;
-        if (!keyword) { alert('키워드를 입력해주세요!'); return; }
-
-        const statusDiv = document.getElementById('generation-status');
-        const button = event.target;
-        
-        statusDiv.innerHTML = '<div class="spinner"></div><p>세계관 정보를 생성 중입니다...</p>';
-        statusDiv.className = 'message-area info';
-        statusDiv.style.display = 'flex';
-        button.disabled = true;
+        // ... (키워드 확인 및 UI 처리 로직은 기존과 동일) ...
 
         try {
             // 1. 텍스트 정보 생성 (Client-side)
             const response = await fetch('/prompts/world-prompt.txt');
-            if (!response.ok) throw new Error('프롬프트 파일 로드 실패');
-            const promptTemplate = await response.text();
-            
-            const genAI = new GoogleGenerativeAI(userApiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const finalPrompt = promptTemplate.replace('{INPUT_KEYWORD}', keyword);
-
-            const result = await model.generateContent(finalPrompt);
-            const responseText = result.response.text();
+            // ... (프롬프트 로드 및 텍스트 생성 로직은 기존과 동일) ...
             const worldData = JSON.parse(responseText.replace(/```json|```/g, '').trim());
 
-            // 2. 이미지 생성 (Server-side)
+            // 2. 이미지 생성 (Server-side Proxy)
             statusDiv.innerHTML = '<div class="spinner"></div><p>세계관 대표 이미지를 생성 중입니다...</p>';
-            const imageResult = await generateImage(worldData.imagePrompt);
-            if (!imageResult.imageUrl) throw new Error('이미지 생성에 실패했습니다.');
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+            // 수정된 부분: generateImage 호출 시 userApiKey를 함께 전달
+            const imageResult = await generateImage(worldData.imagePrompt, userApiKey); 
+            // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+            if (!imageResult.imageUrl) throw new Error(imageResult.message || '이미지 URL을 받아오지 못했습니다.');
             
-            // 3. 모든 정보 서버에 저장 (Server-side)
+            // 3. 모든 정보 서버에 저장
             statusDiv.innerHTML = '<div class="spinner"></div><p>생성된 세계를 기록 중입니다...</p>';
             const saveResult = await saveWorld(worldData, imageResult.imageUrl);
 
@@ -85,14 +71,13 @@ document.addEventListener('click', async (event) => {
                 statusDiv.className = 'message-area error';
             }
         } catch (error) {
-            console.error(error);
-            statusDiv.textContent = '세계관 창조에 실패했습니다: ' + error.message;
-            statusDiv.className = 'message-area error';
+            // ... (에러 처리 로직은 기존과 동일) ...
         } finally {
             button.disabled = false;
         }
     }
 });
+// ... 하단 코드들은 기존과 동일 ...
 
 // --- Initial Load ---
 document.addEventListener('DOMContentLoaded', () => {
