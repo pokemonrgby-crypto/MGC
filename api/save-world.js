@@ -1,24 +1,25 @@
-const { pool } = require('./db');
-const jwt = require('jsonwebtoken');
+import { pool } from './db.js';
+import jwt from 'jsonwebtoken';
 
 const jwtSecret = process.env.JWT_SECRET;
 
-exports.handler = async function(event, context) {
-    // ... (httpMethod, 사용자 인증, 쿨타임 확인 로직은 기존과 동일) ...
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: 'Method Not Allowed' });
+    }
+    
     try {
-        const token = event.headers.authorization.split(' ')[1];
+        const token = req.headers.authorization.split(' ')[1];
         const decoded = jwt.verify(token, jwtSecret);
         const userId = decoded.userId;
-        
-        // ... (쿨타임 확인 로직) ...
 
-        // 클라이언트가 생성한 세계관 데이터와 이미지 URL을 받음
-        const { worldData, imageUrl } = JSON.parse(event.body);
-        if (!worldData || !worldData.name || !worldData.description) {
-            return { statusCode: 400, body: JSON.stringify({ message: '올바른 세계관 데이터가 아닙니다.' }) };
+        // ... (쿨타임 확인 로직은 여기에 추가해야 함) ...
+
+        const { worldData, imageUrl } = req.body;
+        if (!worldData || !worldData.name) {
+            return res.status(400).json({ message: '올바른 세계관 데이터가 아닙니다.' });
         }
 
-        // DB에 세계관 저장 (image_url 추가)
         const newWorld = await pool.query(
             `INSERT INTO worlds (name, description, landmarks, organizations, npcs, image_url, created_by_user_id)
              VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
@@ -27,12 +28,10 @@ exports.handler = async function(event, context) {
         
         await pool.query('UPDATE users SET last_world_creation = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
 
-        return {
-            statusCode: 201,
-            body: JSON.stringify({ message: '새로운 세계가 성공적으로 저장되었습니다!', world: newWorld.rows[0] })
-        };
+        return res.status(201).json({ message: '새로운 세계가 성공적으로 저장되었습니다!', world: newWorld.rows[0] });
 
     } catch (error) {
-        // ... (에러 처리 로직은 기존과 동일) ...
+        console.error(error);
+        return res.status(500).json({ message: '세계관 저장 중 오류가 발생했습니다.' });
     }
-};
+}
