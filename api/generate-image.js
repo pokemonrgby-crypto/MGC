@@ -10,12 +10,14 @@ export default async function handler(req, res) {
     const { prompt, userApiKey } = req.body || {};
     if (!prompt || !userApiKey) return res.status(400).json({ message: 'prompt와 userApiKey가 필요합니다.' });
 
+// (기존 내용과 동일)
     // 현재 SDK에서 안정적인 이미지 생성 모델은 "imagen-3.0-generate"
     const genAI = new GoogleGenerativeAI(userApiKey);
     const model = genAI.getGenerativeModel({ model: 'imagen-3.0-generate' });
-    const result = await model.generateImages({ prompt });
+    const result = await model.generateContent(prompt); // <- 올바른 함수로 수정
     const imgBase64 = result?.response?.candidates?.[0]?.content?.parts?.[0]?.inline_data?.data;
     if (!imgBase64) return res.status(500).json({ message: '이미지 생성 실패' });
+// (기존 내용과 동일)
 
     if (!IMGBB_API_KEY) {
       // 업로드 키 없으면 data URL 그대로 반환(개발 중 임시)
