@@ -1,14 +1,32 @@
-import { RegisterView, LoginView, renderMainLayout, MainView, CreateView, MyInfoView } from './ui.js';
+import * as UI from './ui.js';
 
-// 경로 지도 확장
 const routes = {
-    // Auth routes
-    '/': { view: RegisterView, layout: 'auth' },
-    '/login': { view: LoginView, layout: 'auth' },
-    // App routes
-    '/main': { view: MainView, layout: 'app' },
-    '/create': { view: CreateView, layout: 'app' },
-    '/my-info': { view: MyInfoView, layout: 'app' },
+    '/':       { render: UI.renderRegister, layout: 'auth' },
+    '/login':  { render: UI.renderLogin,    layout: 'auth' },
+    '/main':   { render: UI.renderMain,     layout: 'app' },
+    '/create': { render: UI.renderCreate,   layout: 'app' },
+    '/my-info':{ render: UI.renderMyInfo,   layout: 'app' },
+};
+let currentLayout = null;
+
+export const navigateTo = (url) => { /* ... (내용 동일) ... */ };
+
+const router = async () => {
+    const path = location.pathname;
+    const route = routes[path] || routes['/'];
+
+    if (currentLayout !== route.layout) {
+        currentLayout = route.layout;
+        if (route.layout === 'app') {
+            UI.renderAppLayout(); // 메인 레이아웃을 먼저 그림
+        }
+    }
+    
+    route.render(); // 해당 경로의 콘텐츠를 그림
+    
+    if (route.layout === 'app') {
+        updateNavActiveState(path);
+    }
 };
 
 // 현재 레이아웃 상태를 추적
