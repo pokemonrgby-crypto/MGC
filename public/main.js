@@ -1,46 +1,63 @@
 import { navigateTo } from './router.js';
-import { handleRegisterSubmit, handleLoginSubmit, handleLogout } from './auth.js';
 import { saveApiKey, getApiKey } from './apiKey.js';
-import { createWorld, likeWorld } from './api.js';
+import { createWorld, likeWorld, uploadImage } from './api.js';
 import { refreshWorlds } from './ui.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('click', async (e) => {
-  // 1) 세계관 생성
+  // 1) 세계관 생성 로직 변경
   if (e.target.id === 'generate-world-button') {
     const btn = e.target;
     const status = document.getElementById('generation-status');
     const kw = document.getElementById('world-keyword').value.trim();
+    const imageInput = document.getElementById('world-image');
+    const imageFile = imageInput.files[0];
     const apiKey = getApiKey();
 
+    status.style.display = 'block';
+
     if (!apiKey) {
-        status.style.display = 'block';
-        status.textContent = 'API 키를 먼저 저장해주세요.';
-        setTimeout(() => (status.style.display = 'none'), 3000);
-        return;
+      status.textContent = '내 정보에서 API 키를 먼저 저장해주세요.';
+      return;
+    }
+    if (!kw) {
+      status.textContent = '세계관의 핵심 키워드를 입력해주세요.';
+      return;
+    }
+    if (!imageFile) {
+      status.textContent = '대표 이미지를 선택해주세요.';
+      return;
     }
 
-    status.style.display = 'block';
-    status.textContent = '생성 중… (1~2분 소요)';
     btn.disabled = true;
 
     try {
-      const res = await createWorld({ keyword: kw, userApiKey: apiKey });
-      if (res?.world) {
+      // 1단계: 이미지 업로드
+      status.textContent = '이미지 업로드 중...';
+      const uploadRes = await uploadImage(imageFile);
+      if (!uploadRes.imageUrl) {
+        throw new Error(uploadRes.message || '이미지 업로드에 실패했습니다.');
+      }
+      const imageUrl = uploadRes.imageUrl;
+
+      // 2단계: 텍스트 생성 및 저장
+      status.textContent = '세계관 생성 중... (1~2분 소요)';
+      const createRes = await createWorld({ keyword: kw, userApiKey: apiKey, imageUrl });
+
+      if (createRes?.world) {
         status.textContent = '완료! 목록을 새로고침 합니다.';
         await refreshWorlds();
       } else {
-        // 서버에서 온 구체적인 에러 메시지를 표시
-        status.textContent = `생성 실패: ${res.message} ${res.error ? `(${res.error})` : ''}`;
+        throw new Error(createRes.message || '세계관 생성에 실패했습니다.');
       }
+
     } catch (err) {
       console.error(err);
-      status.textContent = '네트워크 또는 서버 통신 오류';
+      status.textContent = `오류: ${err.message}`;
     } finally {
       btn.disabled = false;
-      // 성공 메시지는 잠시 보여주고, 실패 메시지는 더 길게 보여주도록 수정
       if (status.textContent.includes('완료')) {
           setTimeout(() => (status.style.display = 'none'), 3000);
       } else {
@@ -50,7 +67,7 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // 2) 좋아요
+  // ... (좋아요, API 키 저장, 카드 클릭 핸들러는 기존과 동일) ...
   const likeBtn = e.target.closest('[data-like]');
   if (likeBtn) {
     likeBtn.disabled = true;
@@ -66,7 +83,6 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
-  // 3) API 키 저장
   if (e.target.id === 'save-api-key-button') {
     const apiKeyInput = document.getElementById('api-key-input');
     const messageDiv = document.getElementById('api-key-message');
@@ -88,8 +104,7 @@ document.addEventListener('click', async (e) => {
     }, 3000);
     return;
   }
-
-  // 4) 세계관 카드 클릭
+  
   const worldCard = e.target.closest('.world-card');
   if (worldCard) {
       const worldId = worldCard.dataset.id;
