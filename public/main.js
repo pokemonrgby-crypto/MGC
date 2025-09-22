@@ -2,14 +2,11 @@ import { navigateTo } from './router.js';
 import { handleRegisterSubmit, handleLoginSubmit, handleLogout } from './auth.js';
 import { saveApiKey, getApiKey } from './apiKey.js';
 import { createWorld, likeWorld } from './api.js';
-import { refreshWorlds } from './ui.js'; // ui.js에서 refreshWorlds 함수를 가져옵니다.
+import { refreshWorlds } from './ui.js';
 
-// 최초 로드 시 router가 refresh를 처리하므로 아래 코드는 삭제하거나 비워둡니다.
 document.addEventListener('DOMContentLoaded', () => {
-  // router()가 초기 렌더링 및 데이터 로딩을 모두 처리합니다.
 });
 
-// 전역 클릭 핸들러
 document.addEventListener('click', async (e) => {
   // 1) 세계관 생성
   if (e.target.id === 'generate-world-button') {
@@ -18,24 +15,37 @@ document.addEventListener('click', async (e) => {
     const kw = document.getElementById('world-keyword').value.trim();
     const apiKey = getApiKey();
 
+    if (!apiKey) {
+        status.style.display = 'block';
+        status.textContent = 'API 키를 먼저 저장해주세요.';
+        setTimeout(() => (status.style.display = 'none'), 3000);
+        return;
+    }
+
     status.style.display = 'block';
-    status.textContent = '생성 중… (1~2분)';
+    status.textContent = '생성 중… (1~2분 소요)';
     btn.disabled = true;
 
     try {
       const res = await createWorld({ keyword: kw, userApiKey: apiKey });
       if (res?.world) {
-        status.textContent = '완료! 목록을 새로고침 했어.';
-        await refreshWorlds(); // ui.js에서 가져온 함수를 사용합니다.
+        status.textContent = '완료! 목록을 새로고침 합니다.';
+        await refreshWorlds();
       } else {
-        status.textContent = res?.message || '생성 실패';
+        // 서버에서 온 구체적인 에러 메시지를 표시
+        status.textContent = `생성 실패: ${res.message} ${res.error ? `(${res.error})` : ''}`;
       }
     } catch (err) {
       console.error(err);
-      status.textContent = '네트워크 오류';
+      status.textContent = '네트워크 또는 서버 통신 오류';
     } finally {
       btn.disabled = false;
-      setTimeout(() => (status.style.display = 'none'), 2500);
+      // 성공 메시지는 잠시 보여주고, 실패 메시지는 더 길게 보여주도록 수정
+      if (status.textContent.includes('완료')) {
+          setTimeout(() => (status.style.display = 'none'), 3000);
+      } else {
+          setTimeout(() => (status.style.display = 'none'), 8000);
+      }
     }
     return;
   }
@@ -53,7 +63,7 @@ document.addEventListener('click', async (e) => {
     } finally {
       likeBtn.disabled = false;
     }
-    return; // 좋아요 클릭 시 상세 페이지로 넘어가지 않도록 여기서 이벤트를 종료합니다.
+    return;
   }
 
   // 3) API 키 저장
