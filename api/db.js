@@ -1,11 +1,20 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-// Vercel 환경 변수인 'POSTGRES_URL'을 읽어옵니다.
+// Vercel 환경 변수를 못 읽어올 경우를 대비해, 빈 값으로라도 초기화합니다.
+const connectionString = process.env.POSTGRES_URL || '';
+
+// 만약 connectionString을 못 불러왔다면, 더 명확한 에러를 발생시킵니다.
+if (!connectionString) {
+  console.error("치명적 오류: POSTGRES_URL 환경 변수가 설정되지 않았습니다.");
+  // process.exit(1); // 실제 운영에서는 프로세스를 종료할 수 있습니다.
+}
+
 const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
+  connectionString: connectionString,
   ssl: {
-    rejectUnauthorized: false // Vercel에서 Neon DB에 연결하기 위한 필수 옵션
+    // Vercel에서 외부 데이터베이스(Neon)에 연결하기 위한 필수 보안 옵션입니다.
+    rejectUnauthorized: false 
   }
 });
 
